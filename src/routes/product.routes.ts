@@ -9,7 +9,11 @@ const ProductRouter = Router();
 const productController = new ProductController();
 
 ProductRouter.post(
-  "/importProductsFromExcel",
+  "/excelToJson",
   upload.single("file"),
   productController.excelToJson
 );
+
+ProductRouter.get("/:productId", productController.getProductById);
+
+export default ProductRouter;
