@@ -18,7 +18,7 @@ export type Product = {
 
 export type analysisResponse = {
   sentiment: string;
-  goodKeywords: string;
-  badKeywords: string;
-  hasDiscrepancny: string;
+  issues: string[];
+  improvements: string[];
+  hasDiscrepancy: string;
 };

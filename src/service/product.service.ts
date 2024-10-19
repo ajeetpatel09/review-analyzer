@@ -40,14 +40,41 @@ class ProductService {
     if (!product) {
       throw new ResourceNotFoundError("Product not found!!");
     }
-    let prompt = `Below are reviews of a product, it's in pairs with rating & review. Analyze it and respond in the format provided below, strictly adhering to this structure, result is based on all reviews combined:
+
+    const totalReviews = product.reviewsData.length;
+    const averageRating =
+      product.reviewsData.reduce((total, cur) => total + cur.rating, 0) /
+      totalReviews;
+    const ratingDistributionMap: { [key: string]: number } = {
+      1: 0,
+      2: 0,
+      3: 0,
+      4: 0,
+      5: 0,
+    };
+    for (const review of product.reviewsData) {
+      if (!ratingDistributionMap[review.rating]) {
+        ratingDistributionMap[review.rating] = 1;
+      } else {
+        ratingDistributionMap[review.rating]++;
+      }
+    }
+    const ratingDistribution = Object.keys(ratingDistributionMap).map(
+      (rating) => ({
+        rating: parseInt(rating),
+        count: ratingDistributionMap[rating],
+      })
+    );
+    const recentReviews = product.reviewsData.slice(0, 5);
+
+    let prompt = `Below are the reviews of a product, it's in pairs with rating & review. Analyze it and respond in the format provided below, strictly adhering to this structure, result should be an array of result for each review :
     {
       "sentiment": "Positive/Negative/Neutral: a single word response",
-      "goodKeywords": "return 5 positive keywords of given product extract from review message, only if they're present else nothing.",
-      "badKeywords": "return 5 negative keywords of given product extract from review message, only if they're present else nothing.",
-      "discrepancies": "Number: response is a number of discrepancies in reviews, decided by if there's a contradiction between rating vs review, like rating is 5 star but review is negative."
+      "issues": "return 5 issues for given product extract from review message, only if they're present else nothing.",
+      "improvements": "return 5 keywords for improvement of given product extract from review message, only if they're present else nothing.",
+      "hasDiscrepancy": "Yes/No, response is boolean depending upon whether there is a contradiction between rating vs review, like rating is 5 star but review is negative."
     }
-    
+    If we've 10 review pairs, return the above data for each of them.
     `;
 
     for (const review of product?.reviewsData) {
@@ -59,7 +86,14 @@ class ProductService {
     // console.log('prompt', prompt);
 
     const result = await this.analyzeReviews(prompt);
-    return result;
+
+    return {
+      ...result,
+      totalReviews,
+      averageRating,
+      ratingDistribution,
+      recentReviews,
+    };
   };
 
   analyzeReviews = async (prompt: string) => {
@@ -84,13 +118,78 @@ class ProductService {
         : null;
 
       // Parsing the JSON string into an object
-      const responseObject = formattedResponse
+      const responseObject: analysisResponse[] | null = formattedResponse
         ? JSON.parse(formattedResponse)
         : null;
-      return responseObject;
+
+      if (!responseObject) {
+        throw new ResourceNotFoundError(
+          "Unable to process your request, please try again."
+        );
+      }
+      const data = this.extractRelevantData(responseObject);
+      return data;
     } catch (error) {
       console.log("error in calling gemini", error);
+      return [];
     }
+  };
+
+  extractRelevantData = (analysisResult: analysisResponse[]) => {
+    const sentimentsRatio: { [key: string]: number } = {};
+    for (const cur of analysisResult) {
+      if (!sentimentsRatio[cur.sentiment]) {
+        sentimentsRatio[cur.sentiment] = 1;
+      } else {
+        sentimentsRatio[cur.sentiment]++;
+      }
+    }
+    const discrepancies = analysisResult.reduce(
+      (total, cur) => (cur.hasDiscrepancy == "Yes" ? total + 1 : total),
+      0
+    );
+
+    const commonIssuesMap: { [key: string]: number } = {};
+    for (const cur of analysisResult) {
+      for (const issue of cur.issues) {
+        if (!commonIssuesMap[issue]) {
+          commonIssuesMap[issue] = 1;
+        } else {
+          commonIssuesMap[issue] += 1;
+        }
+      }
+    }
+    const commonIssues = Object.keys(commonIssuesMap).map((issue) => ({
+      issue: issue,
+      count: commonIssuesMap[issue],
+    }));
+    const top5Issues = commonIssues
+      .sort((a, b) => b.count - a.count) // Sort in descending order of count
+      .slice(0, 5);
+
+    const improvementsMap: { [key: string]: number } = {};
+    for (const cur of analysisResult) {
+      for (const imp of cur.improvements) {
+        if (!improvementsMap[imp]) {
+          improvementsMap[imp] = 1;
+        } else {
+          improvementsMap[imp] += 1;
+        }
+      }
+    }
+    const improvements = Object.keys(improvementsMap).map((improvement) => ({
+      improvement: improvement,
+      count: improvementsMap[improvement],
+    }));
+    const top5Improvements = improvements
+      .sort((a, b) => b.count - a.count) // Sort in descending order of count
+      .slice(0, 5);
+    return {
+      sentimentsRatio,
+      discrepancies,
+      commonIssues: top5Issues,
+      improvements: top5Improvements,
+    };
   };
 }
 
