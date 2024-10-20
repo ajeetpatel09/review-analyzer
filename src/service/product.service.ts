@@ -6,6 +6,30 @@ import { productsData } from "../constants";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
 class ProductService {
+  getAllProducts = async () => {
+    const totalProducts = productsData.length;
+    const totalReviews = productsData.reduce(
+      (total, cur) => total + cur.reviewsData.length,
+      0
+    );
+    const averageRating = productsData.reduce((outerTotal, product) => {
+      const ratingSum = product.reviewsData.reduce(
+        (total, cur) => total + cur.rating,
+        0
+      );
+      return outerTotal + ratingSum;
+    }, 0)/totalReviews;
+
+    const topRatedProducts = getTopRatedProducts(productsData);
+
+    return {
+      totalProducts,
+      totalReviews,
+      averageRating,
+      topRatedProducts,
+    };
+  };
+
   excelToJson = async (req: Request) => {
     if (!req.file) {
       throw new ResourceNotFoundError("File not found.");
@@ -88,9 +112,11 @@ class ProductService {
     const result = await this.analyzeReviews(prompt);
 
     return {
-      ...result,
+      id: product.productId,
+      name: product.name,
       totalReviews,
       averageRating,
+      ...result,
       ratingDistribution,
       recentReviews,
     };
@@ -219,4 +245,27 @@ function formatProductReviews(reviews: Review[]): Product[] {
 
   // Convert the object back to an array
   return Object.values(productMap);
+}
+
+function getTopRatedProducts(products: Product[]) {
+  const productsWithAvgRating = products.map((product) => {
+    const totalRating = product.reviewsData.reduce(
+      (acc, review) => acc + review.rating,
+      0
+    );
+    const avgRating = totalRating / product.reviewsData.length;
+
+    return {
+      ...product, // Keep the rest of the product data
+      avgRating: avgRating, // Add the average rating to the product
+    };
+  });
+
+  // Step 2: Sort the products based on their average rating in descending order
+  const sortedProducts = productsWithAvgRating.sort(
+    (a, b) => b.avgRating - a.avgRating
+  );
+
+  // Step 3: Return the top 5 rated products
+  return sortedProducts.slice(0, 5);
 }
