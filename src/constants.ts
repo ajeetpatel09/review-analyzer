@@ -255,7 +255,7 @@ export const productsData: Product[] = [
   },
   {
     productId: "B07FPV716J",
-    name: "Mamaearth-Percent-Natural-Berry-Toothpaste",
+    name: "Mamaearth-Percent-Natural-Choco-Toothpaste",
     reviewsData: [
       {
         date: 43267.00011574074,
@@ -507,7 +507,7 @@ export const productsData: Product[] = [
   },
   {
     productId: "B07Y4ZGYL9",
-    name: "Mamaearth-Natural-Turmeric-Saffron-brightning",
+    name: "Mamaearth-Natural-Turmeric-light-Saffron-brightning",
     reviewsData: [
       {
         date: 43318.00011574074,

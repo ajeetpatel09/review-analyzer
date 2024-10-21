@@ -12,13 +12,14 @@ class ProductService {
       (total, cur) => total + cur.reviewsData.length,
       0
     );
-    const averageRating = productsData.reduce((outerTotal, product) => {
-      const ratingSum = product.reviewsData.reduce(
-        (total, cur) => total + cur.rating,
-        0
-      );
-      return outerTotal + ratingSum;
-    }, 0)/totalReviews;
+    const averageRating =
+      productsData.reduce((outerTotal, product) => {
+        const ratingSum = product.reviewsData.reduce(
+          (total, cur) => total + cur.rating,
+          0
+        );
+        return outerTotal + ratingSum;
+      }, 0) / totalReviews;
 
     const topRatedProducts = getTopRatedProducts(productsData);
 
@@ -162,14 +163,19 @@ class ProductService {
   };
 
   extractRelevantData = (analysisResult: analysisResponse[]) => {
-    const sentimentsRatio: { [key: string]: number } = {};
+    const sentimentsRatioMap: { [key: string]: number } = {
+      Positive: 0,
+      Negative: 0,
+      Neutral: 0,
+    };
     for (const cur of analysisResult) {
-      if (!sentimentsRatio[cur.sentiment]) {
-        sentimentsRatio[cur.sentiment] = 1;
-      } else {
-        sentimentsRatio[cur.sentiment]++;
-      }
+      sentimentsRatioMap[cur.sentiment]++;
     }
+    const sentimentsRatio = [
+      { type: "Positive", count: sentimentsRatioMap.Positive },
+      { type: "Negative", count: sentimentsRatioMap.Negative },
+      { type: "Neutral", count: sentimentsRatioMap.Neutral },
+    ];
     const discrepancies = analysisResult.reduce(
       (total, cur) => (cur.hasDiscrepancy == "Yes" ? total + 1 : total),
       0
@@ -254,10 +260,11 @@ function getTopRatedProducts(products: Product[]) {
       0
     );
     const avgRating = totalRating / product.reviewsData.length;
+    const { reviewsData, ...productWithoutReviews } = product;
 
     return {
-      ...product, // Keep the rest of the product data
-      avgRating: avgRating, // Add the average rating to the product
+      ...productWithoutReviews,
+      avgRating: avgRating,
     };
   });
 
