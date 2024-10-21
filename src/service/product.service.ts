@@ -123,6 +123,7 @@ class ProductService {
     };
   };
 
+  // --------------------------------- helper functions ------------------------------
   analyzeReviews = async (prompt: string) => {
     const GEMINI_API_KEY = process.env.GEMINI_API_KEY!;
     const GEMINI_MODEL = process.env.GEMINI_MODEL!;
@@ -268,11 +269,9 @@ function getTopRatedProducts(products: Product[]) {
     };
   });
 
-  // Step 2: Sort the products based on their average rating in descending order
   const sortedProducts = productsWithAvgRating.sort(
     (a, b) => b.avgRating - a.avgRating
   );
 
-  // Step 3: Return the top 5 rated products
   return sortedProducts.slice(0, 5);
 }
