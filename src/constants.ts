@@ -241,13 +241,13 @@ export const productsData: Product[] = [
       },
       {
         date: 43330.00011574074,
-        rating: 5,
+        rating: 1,
         reviewMessage:
           "The taste is a bit like mild flavoured bubble gum.... My 2 yr old likes it. Plus it claims to be safe for kids since it is all natural without flouride and SLS (chemical used for foaming).Wish that the quantity was a bit more",
       },
       {
         date: 43440.00011574074,
-        rating: 5,
+        rating: 1,
         reviewMessage:
           "It is completely natural so I feel safe for my son. Before I used dento shine tooth paste. But this has changed a lott. Just go for it . It safe.",
       },
@@ -262,12 +262,6 @@ export const productsData: Product[] = [
         rating: 5,
         reviewMessage:
           "I bought this because I was super impressed with the ingredients list. This one says it's a skin-lighting face wash which I felt so disappointed about at first but then I realised it makes your skin lighter by removing tan from your face. I am really very impressed with the effects. It leaves my skin squeaky clean and makes it brighter. I really love the fragrance of this face wash.",
-      },
-      {
-        date: 43495.00011574074,
-        rating: 1,
-        reviewMessage:
-          "It's thick.It has beads and I don't know why they want me to scrub my face off everyday !!!It doesn't foam like a facewash.It smells like pulpy orange while applying and then smells a bit like turmeric after washing off.My face looked bright after using it but not as bright as my previous facewashes.Made my skin dry. It was annoying since my skin was already dry without it and it made it worse !It is definitely not worth the money ( I got it for 175rs in a sale.  Still isn't worth it )I don't think it worked on my tan. I still dont see any changes in skin.It's disappointing !!!!",
       },
       {
         date: 43388.00011574074,
@@ -289,7 +283,7 @@ export const productsData: Product[] = [
       },
       {
         date: 43347.00011574074,
-        rating: 1,
+        rating: 5,
         reviewMessage:
           "After reading so many great reviews, was eagerly waiting for this face wash but when I opened it the tube was half empty...very disappointed.",
       },
